@@ -80,7 +80,9 @@ async function run() {
         app.get('/jobs',  async (req, res) => {
             console.log('now inside the api callback')
             const email = req.query.email; 
-            const sort = req.query.sort
+            const sort = req.query?.sort;
+            // looking for search in query and storing it to search variable
+            const search = req.query?.search;
             let sortQuery = {}  
             let query = {};
             if (email) {
@@ -89,6 +91,12 @@ async function run() {
             if(sort == 'true') {
                 sortQuery = {'salaryRange.min' : -1}
             }
+            // condition for search
+            if(search){
+                // query.location serches for location in the data and $regex for mongo to get search value and $options for eliminating uppercase
+                query.location={$regex :search , $options : "i"}
+            }
+            console.log(query)
             const cursor = jobsCollection.find(query).sort(sortQuery);
             const result = await cursor.toArray();
             res.send(result);
